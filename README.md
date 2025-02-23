@@ -34,3 +34,53 @@ npm start
 git add .
 git ci -m "setup mock app by json-server"
 ```
+
+## Containerize Application
+
+### Create Dockerfile & .dockerignore
+
+- ref: Part 1: Containerize an application | Docker Docs
+  - <https://docs.docker.com/get-started/workshop/02_our_app/>
+- ref: docker/getting-started-app: A simple application for the getting started guide in Docker's documentation
+  - <https://github.com/docker/getting-started-app/tree/main>
+
+```sh
+cat << EOF > Dockerfile
+FROM node:lts-alpine
+WORKDIR /app
+COPY package.json ./
+COPY package-lock.json ./
+RUN npm ci --omit=dev
+COPY db.json ./
+EXPOSE 3000
+ENTRYPOINT [ "npm", "run", "start" ]
+EOF
+
+cat << EOF > .dockerignore
+node_modules
+Dockerfile
+EOF
+```
+
+### docker build & docker run
+
+```sh
+# clean up
+docker image ls
+docker image rm -f todo-app
+
+docker build -t todo-app .
+
+docker image ls
+```
+
+```sh
+docker run -d --rm -p 3000:3000 --name todo-app todo-app
+docker ps
+
+curl http://localhost:3000/todos
+
+# clean up
+docker stop todo-app
+docker ps
+```
